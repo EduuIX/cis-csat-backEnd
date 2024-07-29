@@ -6,7 +6,7 @@ const valueMappingPolitica = {
     'politica-parcialmente-escrita': 60,
     'politica-escrita': 80,
     'politica-escrita-aprovada': 100,
-    'nao-aplicavel': null, // Valor nulo para "Não aplicável"
+    'nao-aplicavel': null,
 };
 
 const valueMappingControleImplementado = {
@@ -16,7 +16,7 @@ const valueMappingControleImplementado = {
     'controle-parcialmente-implementado': 60,
     'controle-implementado': 80,
     'controle-implementado-aprovado': 100,
-    'nao-aplicavel': null, // Valor nulo para "Não aplicável"
+    'nao-aplicavel': null,
 };
 
 const valueMappingControleAutomatizado = {
@@ -26,7 +26,7 @@ const valueMappingControleAutomatizado = {
     'automacao-parcial': 60,
     'automacao-total': 80,
     'automacao-total-aprovada': 100,
-    'nao-aplicavel': null, // Valor nulo para "Não aplicável"
+    'nao-aplicavel': null,
 };
 
 const valueMappingControleRelatado = {
@@ -36,14 +36,16 @@ const valueMappingControleRelatado = {
     'relato-parcial': 60,
     'relato-completo': 80,
     'relato-completo-aprovado': 100,
-    'nao-aplicavel': null, // Valor nulo para "Não aplicável"
+    'nao-aplicavel': null,
 };
 
 const handleFormSave = (req, res) => {
-    const { politicaDefinida, controleImplementado, controleAutomatizado, controleRelatado } = req.body;
+    const { formId, politicaDefinida, controleImplementado, controleAutomatizado, controleRelatado } = req.body;
 
     // Função para mapear os valores do select usando o mapeamento apropriado
     function getValor(option, mapping) {
+        const valor = mapping[option];
+        console.log(`Mapeando ${option} -> ${valor}`);
         return mapping[option] || null;
     }
 
@@ -54,11 +56,14 @@ const handleFormSave = (req, res) => {
 
     // Simulando o salvamento no banco de dados
     const savedData = {
+        formId: formId,
         politicaDefinida: valorPolitica,
         controleImplementado: valorControleImplementado,
         controleAutomatizado: valorControleAutomatizado,
         controleRelatado: valorControleRelatado
     };
+
+    console.log('Dados mapeados e salvos: ', savedData);
 
     res.status(200).json({ message: 'Dados salvos com sucesso', data: savedData });
 };
