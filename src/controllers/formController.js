@@ -1,5 +1,3 @@
-// src/controllers/formController.js
-
 const valueMappingPolitica = {
     'nenhuma-politica': 20,
     'politica-informal': 40,
@@ -10,7 +8,6 @@ const valueMappingPolitica = {
 };
 
 const valueMappingControleImplementado = {
-    // Valores específicos para controle implementado
     'nenhum-controle': 20,
     'controle-informal': 40,
     'controle-parcialmente-implementado': 60,
@@ -20,7 +17,6 @@ const valueMappingControleImplementado = {
 };
 
 const valueMappingControleAutomatizado = {
-    // Valores específicos para controle automatizado
     'nenhuma-automacao': 20,
     'automacao-informal': 40,
     'automacao-parcial': 60,
@@ -30,7 +26,6 @@ const valueMappingControleAutomatizado = {
 };
 
 const valueMappingControleRelatado = {
-    // Valores específicos para controle relatado
     'nenhum-relato': 20,
     'relato-informal': 40,
     'relato-parcial': 60,
@@ -39,13 +34,13 @@ const valueMappingControleRelatado = {
     'nao-aplicavel': null,
 };
 
+// Estrutura para armazenar os dados dos formulários
+let formDataStore = {};
+
 const handleFormSave = (req, res) => {
     const { formId, politicaDefinida, controleImplementado, controleAutomatizado, controleRelatado } = req.body;
 
-    // Função para mapear os valores do select usando o mapeamento apropriado
     function getValor(option, mapping) {
-        const valor = mapping[option];
-        console.log(`Mapeando ${option} -> ${valor}`);
         return mapping[option] || null;
     }
 
@@ -54,20 +49,52 @@ const handleFormSave = (req, res) => {
     const valorControleAutomatizado = getValor(controleAutomatizado, valueMappingControleAutomatizado);
     const valorControleRelatado = getValor(controleRelatado, valueMappingControleRelatado);
 
-    // Simulando o salvamento no banco de dados
     const savedData = {
-        formId: formId,
         politicaDefinida: valorPolitica,
         controleImplementado: valorControleImplementado,
         controleAutomatizado: valorControleAutomatizado,
         controleRelatado: valorControleRelatado
     };
 
-    console.log('Dados mapeados e salvos: ', savedData);
+    if (!formDataStore[formId]) {
+        formDataStore[formId] = [];
+    }
 
-    res.status(200).json({ message: 'Dados salvos com sucesso', data: savedData });
+    formDataStore[formId].push(savedData);
+
+    console.log('Dados mapeados e salvos: ', { formId, ...savedData });
+
+    res.status(200).json({ message: 'Dados salvos com sucesso', data: { formId, ...savedData } });
+};
+
+const calculateAverages = (req, res) => {
+    const averages = {};
+
+    for (const formId in formDataStore) {
+        const entries = formDataStore[formId];
+        let totalSum = 0;
+        let count = 0;
+
+        entries.forEach(entry => {
+            for (const key in entry) {
+                if (entry[key] !== null) {
+                    totalSum += entry[key];
+                    count += 1;
+                }
+            }
+        });
+
+        averages[formId] = {
+            [`média do ${formId}`]: count > 0 ? totalSum / count : 0
+        };
+    }
+
+    console.log('Médias calculadas:', averages);
+
+    res.status(200).json({ message: 'Médias calculadas com sucesso', data: averages });
 };
 
 module.exports = {
-    handleFormSave
+    handleFormSave,
+    calculateAverages
 };
