@@ -1,10 +1,13 @@
+const { readData, writeData } = require('../services/dataService');
+
+// Mapeamento de valores
 const valueMappingPolitica = {
     'nenhuma-politica': 20,
     'politica-informal': 40,
     'politica-parcialmente-escrita': 60,
     'politica-escrita': 80,
     'politica-escrita-aprovada': 100,
-    'nao-aplicavel': null,
+    'nao-aplicavel': 0,
 };
 
 const valueMappingControleImplementado = {
@@ -13,7 +16,7 @@ const valueMappingControleImplementado = {
     'controle-parcialmente-implementado': 60,
     'controle-implementado': 80,
     'controle-implementado-aprovado': 100,
-    'nao-aplicavel': null,
+    'nao-aplicavel': 0,
 };
 
 const valueMappingControleAutomatizado = {
@@ -22,7 +25,7 @@ const valueMappingControleAutomatizado = {
     'automacao-parcial': 60,
     'automacao-total': 80,
     'automacao-total-aprovada': 100,
-    'nao-aplicavel': null,
+    'nao-aplicavel': 0,
 };
 
 const valueMappingControleRelatado = {
@@ -31,17 +34,14 @@ const valueMappingControleRelatado = {
     'relato-parcial': 60,
     'relato-completo': 80,
     'relato-completo-aprovado': 100,
-    'nao-aplicavel': null,
+    'nao-aplicavel': 0,
 };
-
-// Estrutura para armazenar os dados dos formulários
-let formDataStore = {};
 
 const handleFormSave = (req, res) => {
     const { formId, politicaDefinida, controleImplementado, controleAutomatizado, controleRelatado } = req.body;
 
     function getValor(option, mapping) {
-        return mapping[option] || null;
+        return mapping[option] || 0;
     }
 
     const valorPolitica = getValor(politicaDefinida, valueMappingPolitica);
@@ -49,40 +49,41 @@ const handleFormSave = (req, res) => {
     const valorControleAutomatizado = getValor(controleAutomatizado, valueMappingControleAutomatizado);
     const valorControleRelatado = getValor(controleRelatado, valueMappingControleRelatado);
 
-    const savedData = {
+    const data = readData();
+    const formDataStore = data.formDataStore || {};
+
+    // Atualizar dados existentes no armazenamento
+    formDataStore[formId] = {
         politicaDefinida: valorPolitica,
         controleImplementado: valorControleImplementado,
         controleAutomatizado: valorControleAutomatizado,
         controleRelatado: valorControleRelatado
     };
 
-    if (!formDataStore[formId]) {
-        formDataStore[formId] = [];
-    }
+    // Salvar dados atualizados no arquivo JSON
+    writeData({ formDataStore });
 
-    formDataStore[formId].push(savedData);
+    console.log('Dados mapeados e salvos: ', { formId, ...formDataStore[formId] });
 
-    console.log('Dados mapeados e salvos: ', { formId, ...savedData });
-
-    res.status(200).json({ message: 'Dados salvos com sucesso', data: { formId, ...savedData } });
+    res.status(200).json({ message: 'Dados salvos com sucesso', data: { formId, ...formDataStore[formId] } });
 };
 
 const calculateAverages = (req, res) => {
+    const data = readData();
+    const formDataStore = data.formDataStore || {};
     const averages = {};
 
     for (const formId in formDataStore) {
-        const entries = formDataStore[formId];
+        const entry = formDataStore[formId];
         let totalSum = 0;
         let count = 0;
 
-        entries.forEach(entry => {
-            for (const key in entry) {
-                if (entry[key] !== null) {
-                    totalSum += entry[key];
-                    count += 1;
-                }
+        for (const key in entry) {
+            if (entry[key] !== null) {
+                totalSum += entry[key];
+                count += 1;
             }
-        });
+        }
 
         averages[formId] = {
             [`média do ${formId}`]: count > 0 ? totalSum / count : 0
@@ -94,7 +95,32 @@ const calculateAverages = (req, res) => {
     res.status(200).json({ message: 'Médias calculadas com sucesso', data: averages });
 };
 
+const calculateOverallAverage = (req, res) => {
+    const data = readData();
+    const formDataStore = data.formDataStore || {};
+    let totalSum = 0;
+    let count = 0;
+
+    for (const formId in formDataStore) {
+        const entry = formDataStore[formId];
+
+        for (const key in entry) {
+            if (entry[key] !== null) {
+                totalSum += entry[key];
+                count += 1;
+            }
+        }
+    }
+
+    const overallAverage = count > 0 ? totalSum / count : 0;
+
+    console.log('Média geral calculada:', overallAverage);
+
+    res.status(200).json({ message: 'Média geral calculada com sucesso', data: { overallAverage } });
+};
+
 module.exports = {
     handleFormSave,
-    calculateAverages
+    calculateAverages,
+    calculateOverallAverage
 };

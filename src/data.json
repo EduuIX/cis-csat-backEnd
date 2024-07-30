@@ -1,0 +1,34 @@
+{
+  "formDataStore": {
+    "cei01/item1": {
+      "politicaDefinida": 0,
+      "controleImplementado": 0,
+      "controleAutomatizado": 0,
+      "controleRelatado": 0
+    },
+    "cei01/item2": {
+      "politicaDefinida": 0,
+      "controleImplementado": 0,
+      "controleAutomatizado": 0,
+      "controleRelatado": 0
+    },
+    "cei01/item3": {
+      "politicaDefinida": 0,
+      "controleImplementado": 0,
+      "controleAutomatizado": 0,
+      "controleRelatado": 0
+    },
+    "cei01/item4": {
+      "politicaDefinida": 0,
+      "controleImplementado": 0,
+      "controleAutomatizado": 0,
+      "controleRelatado": 0
+    },
+    "cei01/item5": {
+      "politicaDefinida": 0,
+      "controleImplementado": 0,
+      "controleAutomatizado": 0,
+      "controleRelatado": 0
+    }
+  }
+}
